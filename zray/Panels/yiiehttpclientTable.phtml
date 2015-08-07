@@ -1,0 +1,140 @@
+<?php
+$tableParams = array(
+    'tableId' 			=> 'yiiehttp-requests',
+    'tableWidth'        => '4',
+    'searchId'          => 'yiiehttp-table-search',
+    'pagerId'           => 'yiiehttp-table-pager',
+);
+?>
+
+
+<div>
+
+    <?php echo $this->zrayTable($tableParams) ?>
+
+</div>
+
+<script type="text/javascript">
+    (function() {
+        $zendDevBar(function() {
+            var storage = zendDevBar.getStorage('yiiehttpRequestsTable');
+            zray.registerDataHandler('yiiehttpclient', 'RequestsYiiEHttp', function(extensionData) {
+                storage.setData(extensionData);
+            });
+            // create main table
+            var mainTable = zendDevBar.createTable(storage, jQuery('#<?php echo $tableParams['tableId']; ?>'));
+            mainTable.setColumns([
+                {
+                    "label": "Method",
+                    "propertyName": "method",
+                    "sortable": true,
+                    "width": '5%',
+                    "getHtml": function(value, record) {
+                        var resultCode=record.responseCode;
+                        if( resultCode == "200" ){
+                            resultCodeColor = "green";
+                        }else{
+                            resultCodeColor = "red";
+                        }
+                        return ' <b>' + value + '</b>, (<span style="color:' + resultCodeColor + ';">' + resultCode + '</span>)';
+                    }
+                },
+                {
+                    "label": "time",
+                    "propertyName": "duration",
+                    "sortable": true,
+                    "width": '5%',
+                    "getHtml": function(value) {
+                        value = Math.ceil(value / 1000);
+                        return value + 'ms';
+                    }
+                },
+                {
+                    "label": "URL",
+                    "propertyName": "url",
+                    "sortable": true,
+                    "width": '25%',
+                    "getHtml": function(value) {
+                        return ' <b>' + value + '</b>';
+                    }
+                },
+                {
+                    "label": "Response",
+                    "propertyName": "responseRawBody",
+                    "sortable": true,
+                    "width": '50%',
+                    "getHtml": function(value) {
+                        return   zendDevBar.shorten(value, 250) ;
+                    }
+                },
+                {
+                    label: 'Actions',
+                    tooltip: 'yiiehttp Requests actions',
+                    propertyName: 'backtraceId',
+                    width: '5%',
+                    getHtml: function (value, record) {
+                        var elem = $zendDevBar('<div class="zdb-table-action zdb-ta-backtrace" title="Show backtrace"></div>');
+                        elem.click(function () {
+                            showBacktrace(record);
+                        });
+                        return elem;
+                    }
+                }
+            ]);
+
+            // create pager
+            zray.createPager(storage,
+                jQuery('#<?php echo $tableParams['pagerId']; ?>'));
+
+
+            // create search
+            zray.createSearch(storage,
+                jQuery('#<?php echo $tableParams['searchId']; ?>'), mainTable);
+
+        });
+
+        function showBacktrace(data) {
+            var overlay = zendDevBar.getModuleOverlay('zrayExtension:yiiehttpclient/yiiehttpclientTable');
+            var spinner = $zendDevBar('<div class="zdb-overlay-spinner" style="height: ' + (overlay.outerHeight() - 30) + 'px; line-height: ' + (overlay.outerHeight() - 30) + 'px"><div><div class="zdb-spinner-img"></div>Loading...</div></div>');
+            overlay.append(spinner);
+            spinner.remove();
+            shortFileName = zendDevBar.shorten(data.url, 100);
+            var resultCode=data.responseCode;
+            if( resultCode == "200" ){
+                resultCodeColor = "green";
+            }else{
+                resultCodeColor = "red";
+            }
+            requestHeadline = ' <b>' + data.method + '</b>, (<span style="color:' + resultCodeColor + ';">' + resultCode + '</span>)';
+            overlay.append('\
+                <div class="zdb-row zdb-toolbar-detail-header">\
+                    <div class="zdb-col-4">\
+                        <h1><a href="javascript:void(0);" onclick="zendDevBar.removeModuleOverlay(\'zrayExtension:yiiehttp/yiiehttpclientTable\')">' + requestHeadline + '</a> <span style="font-size: 14px;color: #006F9D;">&raquo ' + shortFileName + '</span></h1>\
+                        <div class="zdb-pull-right">\
+                            <ul class="zdb-toolbar-items zdb-horizontal">\
+                                <li><a class="zdb-backtrace-back" href="javascript:void(0);" onclick="zendDevBar.removeModuleOverlay(\'zrayExtension:yiiehttp/yiiehttpclientTable\')">back</a></li>\
+                            </ul>\
+                        </div>\
+                    </div>\
+                <div class="zdb-row zdb-panel zsb-logs-backtrace-panel">\
+                    <div class="zdb-col-4 zdb-entries-table-wrapper zdb-adaptive-height zsb-overlay-backtrace-table-wrapper-yiiehttp-requests"></div>\
+                    <div class="hidden zdb-yiiehttp-requests-backtrace-full-data"></div>\
+                </div>\
+            ');
+
+            var backtraceTable = createBacktrace(data, false);
+
+            overlay.find('.zdb-adaptive-height').css('height', zendDevBar.cookieParams.height - 50);
+        }
+
+        function createBacktrace(backtrace, displayFullData) {
+            var storage = zendDevBar.getStorage('yiiehttpRequestsFullDataTable');
+            storage.reset();
+            storage.setLimit(-1);
+            storage.addData(backtrace);
+            // create main table
+            var tableContainer = displayFullData ? $zendDevBar('.zdb-yiiehttp-requests-backtrace-full-data') : $zendDevBar('.zsb-overlay-backtrace-table-wrapper-yiiehttp-requests');
+            return zray.createTreeTable(storage, tableContainer);
+        }
+    })();
+</script>
