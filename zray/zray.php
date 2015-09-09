@@ -2,7 +2,7 @@
 
 $zre = new ZRayExtension('yiiehttpclient');
 
-$zre->setEnabled();
+$zre->setEnabledAfter('EHttpClient::request');
 
 $zre->traceFunction('EHttpClient::request', function($context, &$storage){}, function($context, &$storage){
     /* @var EHttpClient */
@@ -23,16 +23,19 @@ $zre->traceFunction('EHttpClient::request', function($context, &$storage){}, fun
     $params = $method == 'GET' ? $paramsGetProperty->getValue($httpClient) : $paramsPostProperty->getValue($httpClient);
     $result = $context['returnValue'];
     if ($result instanceof EHttpResponse) {
-        $result = $result->getBody();
+        $body = $result->getBody();
     }
+
+    $jsonResult = json_decode($body);
 
     $storage['RequestsYiiEHttp'][] = array(
         'method' => $context['functionArgs'][0],
         'url' => $uri,
-//        'headers' => json_encode($client->getRequest()->getHeaders()->toArray()),
+        'headers' => $result->getHeaders(),
         'params' => ($params),
-        'responseRawBody' => $result,
-//        'responseCode' => $statusCode,
+        'responseRawBody' => $body,
+        'responsePayload' => $jsonResult ? $jsonResult : $body,
+        'responseCode' => $result->getStatus(),
         'duration' => $context['durationInclusive']
 
     );
