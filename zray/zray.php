@@ -22,6 +22,7 @@ $zre->traceFunction('EHttpClient::request', function($context, &$storage){}, fun
 
     $params = $method == 'GET' ? $paramsGetProperty->getValue($httpClient) : $paramsPostProperty->getValue($httpClient);
     $result = $context['returnValue'];
+    $body = '{}';
     if ($result instanceof EHttpResponse) {
         $body = $result->getBody();
     }
