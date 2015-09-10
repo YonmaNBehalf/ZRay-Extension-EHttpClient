@@ -23,8 +23,12 @@ $zre->traceFunction('EHttpClient::request', function($context, &$storage){}, fun
     $params = $method == 'GET' ? $paramsGetProperty->getValue($httpClient) : $paramsPostProperty->getValue($httpClient);
     $result = $context['returnValue'];
     $body = '{}';
+    $headers = array();
+    $code = 0;
     if ($result instanceof EHttpResponse) {
         $body = $result->getBody();
+        $headers = $result->getHeaders();
+        $code = $result->getStatus();
     }
 
     $jsonResult = json_decode($body);
@@ -32,11 +36,11 @@ $zre->traceFunction('EHttpClient::request', function($context, &$storage){}, fun
     $storage['RequestsYiiEHttp'][] = array(
         'method' => $context['functionArgs'][0],
         'url' => $uri,
-        'headers' => $result->getHeaders(),
+        'headers' => $headers,
         'params' => ($params),
         'responseRawBody' => $body,
         'responsePayload' => $jsonResult ? $jsonResult : $body,
-        'responseCode' => $result->getStatus(),
+        'responseCode' => $code,
         'duration' => $context['durationInclusive']
 
     );
