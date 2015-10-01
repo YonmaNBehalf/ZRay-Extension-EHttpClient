@@ -1,6 +1,6 @@
 <?php
 
-$zre = new ZRayExtension('yiiehttpclient');
+$zre = new ZRayExtension('Requests');
 
 $zre->setEnabledAfter('EHttpClient::request');
 

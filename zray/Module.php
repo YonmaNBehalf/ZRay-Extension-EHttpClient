@@ -12,17 +12,17 @@ class Module extends \ZRay\ZRayModule {
             ),
             // Prevent those default panels from being displayed
             'defaultPanels' => array(
-                'RequestsYiiEHttp' => false,
+                'RequestsYiiEHttp' => true,
             ),
             // configure all custom panels
             'panels' => array(
-                'yiiehttpclientTable' => array(
-                    'display'           => true,
-                    'menuTitle'         => 'EHttp Requests',
-                    'panelTitle'        => 'EHttp Requests',
-                    'searchId'          => 'yiiehttp-table-search',
-                    'pagerId'           => 'yiiehttp-table-pager',
-                )
+//                'yiiehttpclientTable' => array(
+//                    'display'           => true,
+//                    'menuTitle'         => 'EHttp Requests',
+//                    'panelTitle'        => 'EHttp Requests',
+//                    'searchId'          => 'yiiehttp-table-search',
+//                    'pagerId'           => 'yiiehttp-table-pager',
+//                )
             )
         );
     }
